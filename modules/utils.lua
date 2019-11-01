@@ -51,18 +51,20 @@ function utils.create_basic_actions(settings)
     onStart = function() os.rmdir(settings.paths.build) end
   }
   
-  newaction {
-    -- TODO: switch to format all/only modified in git
-    trigger = "format",
-    description = "Apply .clang-format style to all source files",
-    onStart = function()
-      for _, src_ext in ipairs(settings.source_extensions) do
-        for _, file in ipairs(os.matchfiles(settings.paths.modules .. '**' .. src_ext)) do
-          os.executef('%s -i -style=file -fallback-style=none %s', settings.paths.ClangFormatExecutable, file)
+  if settings.paths.ClangFormatExecutable ~= nil and os.isfile(settings.paths.ClangFormatExecutable) then 
+    newaction {
+      -- TODO: switch to format all/only modified in git
+      trigger = "format",
+      description = "Apply .clang-format style to all source files",
+      onStart = function()
+        for _, src_ext in ipairs(settings.source_extensions) do
+          for _, file in ipairs(os.matchfiles(settings.paths.modules .. '**' .. src_ext)) do
+            os.executef('%s -i -style=file -fallback-style=none %s', settings.paths.ClangFormatExecutable, file)
+          end
         end
       end
-    end
-  }
+    }
+  end
   
   newoption {
     trigger     = "rebuild",
