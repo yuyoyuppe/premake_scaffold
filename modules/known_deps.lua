@@ -24,6 +24,10 @@ return {
   imgui = {
     build = function(self, paths)
       os.link_files_filtered('.', paths.built_deps.include, {'.h'}, false)
+      os.link_files_filtered('misc/cpp', paths.built_deps.include, {'.h'}, false)
+      os.chdir('misc/cpp/')
+      os.mklink('imgui_stdlib.h', path.join(paths.built_deps.include, 'imgui_stdlib.h'))
+      os.chdir('../../')
     end
   },
 
