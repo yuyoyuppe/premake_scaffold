@@ -90,13 +90,15 @@ local function generate_module(description, paths, source_extensions)
   }
 
   links(description.links)
+  -- MSVC specific START  
+  buildoptions { "/permissive-" }
+  -- MSVC specific END
   filter "configurations:Debug"
     symbols "FastLink"
     runtime "Debug"
     defines { "DEBUG" }
     targetsuffix "d"
   filter "configurations:Release"
-    -- symbols "Off"
     defines { "NDEBUG" }
     runtime "Release"
     optimize "On"
