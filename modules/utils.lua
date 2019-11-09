@@ -42,6 +42,29 @@ function utils.ensure_table_has_typed_fields(table_name, t, fields)
   end
 end
 
+function utils.git_get_all_dirty_files(extensions)
+  local staged    = os.outputof('git diff --name-only --diff-filter=d --cached')
+  local unstaged  = os.outputof('git ls-files -m')
+  local untracked = os.outputof('git ls-files --others --exclude-standard')
+  local result = {}
+  
+  local parse_output = function(cmd_out) 
+    for filepath in string.gmatch(cmd_out, "%S+") do 
+      for _, ext in pairs(extensions) do
+        if(path.getextension(filepath) == ext) then
+          table.insert(result, filepath)
+          break
+        end
+      end
+    end
+  end
+  parse_output(staged)
+  parse_output(unstaged)
+  parse_output(untracked)
+
+  return result
+end
+
 function utils.id() end
 
 function utils.create_basic_actions(settings)
@@ -53,14 +76,15 @@ function utils.create_basic_actions(settings)
   
   if settings.paths.ClangFormatExecutable ~= nil and os.isfile(settings.paths.ClangFormatExecutable) then 
     newaction {
-      -- TODO: switch to format all/only modified in git
       trigger = "format",
-      description = "Apply .clang-format style to all source files",
+      description = "Apply .clang-format style to dirty source files",
       onStart = function()
-        for _, src_ext in ipairs(settings.source_extensions) do
-          for _, file in ipairs(os.matchfiles(settings.paths.modules .. '**' .. src_ext)) do
-            os.executef('%s -i -style=file -fallback-style=none %s', settings.paths.ClangFormatExecutable, file)
-          end
+        local dirty_files = utils.git_get_all_dirty_files(settings.source_extensions)
+        local count = #dirty_files
+        print('%\tStatus')
+        for i, filepath in ipairs(dirty_files) do
+          print( '' .. i .. '/' .. count .. '\tFormatting ' .. filepath)
+          os.executef('%s -i -style=file -fallback-style=none %s', settings.paths.ClangFormatExecutable, filepath)
         end
       end
     }
