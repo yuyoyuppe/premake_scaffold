@@ -109,6 +109,17 @@ local function generate_module(description, paths, source_extensions)
   end
 end
 
+local function infer_solution_level_settings(module_descriptions)
+  for name, desc in pairs(module_descriptions) do
+    for method, args in pairs(desc.premake_delayed_calls) do
+      if method == 'kind' and args:find('App') then
+        startproject(name)
+      end
+    end
+  end
+
+end
+
 function ps.generate(settings)
   if not premake or string.sub(premake._VERSION, 1, 1) ~= '5' then
     error('you should only use premake_scaffold from premake5!')
@@ -142,6 +153,7 @@ function ps.generate(settings)
       end
     end
   end
+  infer_solution_level_settings(module_descriptions)
   for _, desc in pairs(module_descriptions) do generate_module(desc, S.paths, S.source_extensions) end
 end
 
