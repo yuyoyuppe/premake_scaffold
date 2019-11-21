@@ -47,6 +47,7 @@ end
 local function generate_module(description, paths, source_extensions)
   project(description.name)
   basedir(paths.build)
+  debugdir(paths.build .. "bin")
   targetdir(paths.build .. "bin")
   objdir(paths.build .. "obj")
   warnings "Extra"
