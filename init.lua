@@ -92,7 +92,7 @@ local function generate_module(description, paths, source_extensions)
 
   links(description.links)
   -- MSVC specific START  
-  buildoptions { "/permissive-" }
+  buildoptions { "/permissive-", "/await" }
   -- MSVC specific END
   filter "configurations:Debug"
     symbols "FastLink"
