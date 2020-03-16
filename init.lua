@@ -183,7 +183,9 @@ function ps.generate(settings)
     end
   end
   infer_solution_level_settings(module_descriptions)
-  for _, desc in pairs(module_descriptions) do generate_module(desc, S.paths, S.source_extensions) end
+  for _, desc in pairs(module_descriptions) do
+    generate_module(desc, S.paths, S.source_extensions) 
+  end
 end
 
 return ps
