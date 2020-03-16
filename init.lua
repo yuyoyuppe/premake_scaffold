@@ -59,11 +59,9 @@ local function generate_module_custom_build_pipeline(description, cbp)
   filter { "files:**" .. cbp.extension }
 
   files { "**" .. cbp.extension }
-  local n_stages = #cbp.stages
+  buildmessage (string.format("%s [using %s]", "%(Filename)%(Extension)", name))
   for i, stage in ipairs(cbp.stages) do
     buildoutputs (stage.outputs)
-    local msg = string.format("%s %d/%d [using %s]", "%(Filename)%(Extension)", i, n_stages, name)
-    buildmessage (msg)
     buildcommands { stage.cmd .. ' ' .. stage.args }
   end
   filter {}
