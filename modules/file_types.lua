@@ -29,7 +29,6 @@ local shaders = {
   end
 }
 
-
 return {
   shaders
 }
