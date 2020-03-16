@@ -103,7 +103,6 @@ local function generate_module(description, paths, source_extensions)
   sysincludedirs {paths.built_deps.include}
   syslibdirs {paths.built_deps.lib}
   sysincludedirs {path.getabsolute(paths.build) .. '/include'}
-  sysincludedirs {}
 
   if paths.VulkanSDK ~= nil then
     sysincludedirs {paths.VulkanSDK .. '/include'}
