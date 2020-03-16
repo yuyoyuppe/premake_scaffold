@@ -67,6 +67,14 @@ local function generate_module_custom_build_pipeline(description, cbp)
     buildcommands { stage.cmd .. ' ' .. stage.args }
   end
   filter {}
+  
+  if cbp.postbuildcommands ~= nil then
+    postbuildcommands(cbp.postbuildcommands(description))
+  end
+
+  if cbp.cleancommands ~= nil then
+    cleancommands(cbp.cleancommands(description))
+  end
 end
 
 local function generate_module(description, paths, source_extensions)
