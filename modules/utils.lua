@@ -140,7 +140,7 @@ function table.map_inplace(table, func)
 end
 
 -- os.rmdir uses RemoveDirectoryW on windows, which removes actual contents of the junction smh.
--- TODO: investigate why cmd's rmdir works differently. BTW, rmdir from cygwin  also works
+-- TODO: investigate why cmd's rmdir works differently. BTW, rmdir from cygwin also works
 --       differently as it's able to error out w/ 'not a directory' error.
 function os.rmdir_native(dir)
   if not os.isdir(dir) then 

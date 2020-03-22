@@ -42,5 +42,11 @@ return {
       os.mklink('toml.hpp', path.join(paths.built_deps.include, 'toml.hpp'))
       os.mklink('toml', path.join(paths.built_deps.include, 'toml'))
     end
-  }
+  },
+
+  entt = {
+    build = function(self, paths)
+      os.mklink('src/entt', path.join(paths.built_deps.include, 'entt'))
+    end
+  } 
 }
