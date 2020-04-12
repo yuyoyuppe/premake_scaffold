@@ -15,9 +15,8 @@ return {
       utils.ensure_devtools_shell()
       os.execute('cmake -DCMAKE_GENERATOR_PLATFORM=x64 -DBUILD_STATIC_LIBS=1 .')
       os.execute('msbuild /m /nologo /v:q /p:Configuration=Release /p:Platform=x64 glm\\glm_static.vcxproj')
-      -- todo: fix for updated paths api
-      -- os.mklink('glm/Release/glm_static.lib', '../build/lib/glm_static.lib')
-      -- utils.link_files_filtered('glm/', '../build/include/', {'.hpp', '.inl', '.h'}) 
+      os.mklink('glm/Release/glm_static.lib', path.join(paths.built_deps.lib, 'glm_static.lib'))
+      os.mklink('glm/', path.join(paths.built_deps.include, 'glm')) 
     end
   },
 
