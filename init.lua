@@ -1,7 +1,5 @@
 local ps = { _VERSION = '0.1', utils = require 'modules.utils' }
 
-local utils = ps.utils
-
 local default_settings = {
   paths = {
     build = 'build/',

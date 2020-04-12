@@ -1,8 +1,8 @@
-local known_deps = require 'known_deps'
-
-local utils = {
+utils = {
   pprint = require 'pprint',
 }
+
+local known_deps = require 'known_deps'
 
 function utils.has_in_path(executable)
   return os.execute('where ' .. executable .. ' >nul 2>nul')
