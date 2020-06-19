@@ -124,9 +124,15 @@ local function generate_module(description, paths, source_extensions)
 
   links(description.links)
   -- MSVC specific START  
-  buildoptions { "/permissive-", "/await" }
+  buildoptions { "/permissive-", "/await", "/Zc:__cplusplus" }
   -- MSVC specific END
   filter "configurations:Debug"
+  -- MSVC specific START  
+  disablewarnings  -- disable annoying warnings during prototyping
+  { 
+    "4100",
+  }
+  -- MSVC specific END
     symbols "FastLink"
     runtime "Debug"
     defines { "DEBUG" }
