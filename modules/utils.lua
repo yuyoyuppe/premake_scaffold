@@ -125,6 +125,7 @@ function utils.create_basic_actions(settings)
 end
 
 -- built-in module extensions 
+
 function table.map_inplace(table, func)
   local impl
   impl = function(t, f)

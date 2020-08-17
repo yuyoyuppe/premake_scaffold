@@ -51,6 +51,5 @@ And now you're done. As you see, you can specify any `premake5` *api-call data* 
 - finalize custom types support (shaders)
 - integrate scre
 - integrate luafmt
-- allow solution level premake overrides
 - linux/macosx support
 - profile configuration
