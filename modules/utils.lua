@@ -16,7 +16,7 @@ end
 
 function utils.ensure_executables_in_path(list)
   for _, exec in ipairs(list) do
-    if not has_in_path(exec) then
+    if not utils.has_in_path(exec) then
       error('you should have ' .. exec .. ' in your PATH!')
     end
   end
