@@ -167,6 +167,7 @@ function ps.generate(settings)
       "4127", -- conditional expression is constant
       "4275", -- non-dll interface class used as base for dll-interface class
       "5054", -- operator '|': deprecated between enumerations of different types
+      "4201", -- non-standard: nameless struct used (typically in a union)
     }
     defines
     {
