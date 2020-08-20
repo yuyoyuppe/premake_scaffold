@@ -12,14 +12,19 @@ return {
       os.chdir('..')
       os.mklink('include/box2d', path.join(paths.built_deps.include, 'box2d')) 
     end
+  },
 
+  cnl = {
+    build = function(self, paths)
+      os.mklink('include/cnl', path.join(paths.built_deps.include, 'cnl')) 
+    end
   },
 
   glfw = {
     build = function(self, paths)
       utils.ensure_executables_in_path({'cmake', 'git'})
       utils.ensure_devtools_shell()
-      os.execute('cmake --log-level=ERROR -DBUILD_SHARED_LIBS=OFF -DGLFW_BUILD_EXAMPLES=OFF -DGLFW_BUILD_TESTS=OFF -DGLFW_BUILD_DOCS=OFF -DUSE_MSVC_RUNTIME_LIBRARY_DLL=OFF -DGLFW_VULKAN_STATIC=OFF -Dcmake --log-level=ERROR_GENERATOR_PLATFORM=x64 -DVULKAN_INCLUDE_DIR=%s -DVULKAN_LIBRARY=%s .', paths.VulkanSDK, paths.VulkanSDK)
+      os.execute('cmake --log-level=ERROR -DBUILD_SHARED_LIBS=OFF -DGLFW_BUILD_EXAMPLES=OFF -DGLFW_BUILD_TESTS=OFF -DGLFW_BUILD_DOCS=OFF -DUSE_MSVC_RUNTIME_LIBRARY_DLL=OFF -DGLFW_VULKAN_STATIC=OFF -DCMAKE_GENERATOR_PLATFORM=x64 -DVULKAN_INCLUDE_DIR=%s -DVULKAN_LIBRARY=%s .', paths.VulkanSDK, paths.VulkanSDK)
       os.execute('msbuild /m /nologo /v:q /p:Configuration=Release /p:Platform=x64 GLFW.sln')
       os.mklink('src/Release/glfw3.lib', path.join(paths.built_deps.lib, 'glfw3.lib'))
       -- utils.link_files_filtered('include/GLFW', '../build/') -- todo: fix for updated paths api
@@ -29,7 +34,7 @@ return {
   glm = {
     build = function(self, paths)
       utils.ensure_devtools_shell()
-      os.execute('cmake --log-level=ERROR -Dcmake --log-level=ERROR_GENERATOR_PLATFORM=x64 -DBUILD_STATIC_LIBS=1 .')
+      os.execute('cmake --log-level=ERROR -DCMAKE_GENERATOR_PLATFORM=x64 -DBUILD_STATIC_LIBS=1 .')
       os.execute('msbuild /m /nologo /v:q /p:Configuration=Release /p:Platform=x64 glm\\glm_static.vcxproj')
       os.mklink('glm/Release/glm_static.lib', path.join(paths.built_deps.lib, 'glm_static.lib'))
       os.mklink('glm/', path.join(paths.built_deps.include, 'glm')) 
