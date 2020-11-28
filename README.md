@@ -11,9 +11,7 @@ and then your whole `premake5.lua` is:
 ```lua
 ps = require 'deps.premake_scaffold'
 workspace "awesome_project"
-ps.generate({ paths = { 
-  ClangFormatExecutable = "S:\\VS2019\\VC\\Tools\\Llvm\\bin\\clang-format.exe",
-  VulkanSDK             = "S:\\VulkanSDK\\1.1.121.2\\" } })
+ps.generate({ paths = {  VulkanSDK = "S:\\VulkanSDK\\1.1.121.2\\" } })
 ```
 
 What you've got? Let's say you've had a project structure like this:
@@ -45,6 +43,15 @@ And now you're done. As you see, you can specify any `premake5` *api-call data* 
 - Every software project needs its own philosophy
 - Don't waste time
 - Use a turn-key solution such as `vcpkg`/`pacman`/`brew` as much as you can
+
+## API description
+
+### `generate(settings)`
+`settings`: table with the following optional contents:
+- *paths* table:
+  - `ClangFormatExecutable` - absolute path to `clang-format` executable if you don't have it in PATH
+  - `VulkanSDK`
+  
 
 # TODO
 
