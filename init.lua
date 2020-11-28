@@ -129,6 +129,10 @@ function ps.generate(settings)
   if not premake or string.sub(premake._VERSION, 1, 1) ~= '5' then
     error('You should only use premake_scaffold from premake5!')
   end
+
+  if settings == nil then
+    settings = {}
+  end
   if type(settings) ~= 'table' then
     error('You should provide settings table!')
   end

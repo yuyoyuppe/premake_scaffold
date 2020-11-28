@@ -74,7 +74,14 @@ function utils.create_basic_actions(settings)
     onStart = function() os.rmdir(settings.paths.build) end
   }
   
-  if settings.paths.ClangFormatExecutable ~= nil and os.isfile(settings.paths.ClangFormatExecutable) then 
+  local has_clangformat = settings.paths.ClangFormatExecutable ~= nil and os.isfile(settings.paths.ClangFormatExecutable) 
+  
+  if (not has_clangformat) and utils.has_in_path('clang-format') then
+    settings.paths.ClangFormatExecutable = 'clang-format'
+    has_clangformat = true
+  end
+
+  if has_clangformat then 
     newaction {
       trigger = "format",
       description = "Apply .clang-format style to dirty source files",
