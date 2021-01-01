@@ -4,8 +4,21 @@ utils = {
 
 local known_deps = require 'known_deps'
 
+function utils.exec_silent(cmd, ...)
+  local formatted = cmd:format(...)
+  if os.host() == "windows" then
+    return os.execute(formatted .. ' >nul 2>nul')
+  else
+    return os.execute(formatted .. '  > /dev/null 2>&1')
+  end
+end
+
 function utils.has_in_path(executable)
-  return os.execute('where ' .. executable .. ' >nul 2>nul')
+  if os.host() == "windows" then
+    return utils.exec_silent('where ' .. executable)
+  else
+    return utils.exec_silent('which ' .. executable)
+  end 
 end
 
 function utils.ensure_devtools_shell()
@@ -179,9 +192,9 @@ function os.mklink(target_path, link_path)
   
   if os.host() == "windows" then
     if dir_mode then
-      os.executef('mklink /J "%s" "%s" >nul 2>nul', link_path, target_path)
+      utils.exec_silent('mklink /J "%s" "%s"', link_path, target_path)
     else
-      os.executef('mklink /H "%s" "%s" >nul 2>nul', link_path, target_path)
+      utils.exec_silent('mklink /H "%s" "%s"', link_path, target_path)
     end
   else
     premake.error('mklink is unimplemented for this platform')
