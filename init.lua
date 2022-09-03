@@ -92,12 +92,12 @@ local function generate_module(description, paths, source_extensions)
   end
 
   includedirs {paths.modules}
-  sysincludedirs {paths.built_deps.include}
+  externalincludedirs {paths.built_deps.include}
   syslibdirs {paths.built_deps.lib}
-  sysincludedirs {path.getabsolute(paths.build) .. '/include'}
+  externalincludedirs {path.getabsolute(paths.build) .. '/include'}
 
   if paths.VulkanSDK ~= nil then
-    sysincludedirs {paths.VulkanSDK .. '/include'}
+    externalincludedirs {paths.VulkanSDK .. '/include'}
     syslibdirs{ paths.VulkanSDK .. '/Lib' }
   end
 
