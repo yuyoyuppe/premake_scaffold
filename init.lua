@@ -10,7 +10,7 @@ local default_settings = {
       lib = 'build/lib/',
     }
   },
-  source_extensions = {".cpp", ".hpp", ".cxx", ".hxx", ".h"},
+  source_extensions = {".cpp", ".hpp", ".cxx", ".hxx", ".h", ".cc"},
   configurations = {"Debug", "Release"},
   deps = {},
 }
