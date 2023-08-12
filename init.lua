@@ -149,7 +149,7 @@ function ps.generate(settings)
 
   -- setup up solution level settings
   architecture "x86_64"
-  cppdialect "C++latest" 
+  cppdialect "C++20" 
   language "C++"
   configurations(S.configurations)
   basedir(S.paths.build)
@@ -163,7 +163,7 @@ function ps.generate(settings)
     "MultiProcessorCompile", 
     "UndefinedIdentifiers" 
   }
-  buildoptions { "/permissive-", "/await", "/Zc:__cplusplus" }
+  buildoptions { "/permissive-", "/Zc:__cplusplus" }
 
   filter { "system:windows" }
     disablewarnings
