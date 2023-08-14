@@ -1,3 +1,5 @@
+require 'modules.extensions'
+
 local ps = { _VERSION = '0.1', utils = require 'modules.utils' }
 
 local default_settings = {
@@ -154,6 +156,7 @@ function ps.generate(settings)
   configurations(S.configurations)
   basedir(S.paths.build)
   warnings "Extra"
+  vcpkgstatic "true"
 
   filter "system:windows"
   flags 
