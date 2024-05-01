@@ -157,6 +157,7 @@ function ps.generate(settings)
   basedir(S.paths.build)
   warnings "Extra"
   vcpkgstatic "true"
+  staticruntime "on"
 
   filter "system:windows"
   flags 
