@@ -1,4 +1,6 @@
 require 'modules.extensions'
+require 'modules.options'
+require 'modules.vcpkg'
 
 local ps = { _VERSION = '0.1', utils = require 'modules.utils' }
 
@@ -127,7 +129,7 @@ local function infer_solution_level_settings(module_descriptions)
   end
 end
 
-function ps.generate(settings)
+function ps.generate(vcpkg_packages, settings)
   if not premake or string.sub(premake._VERSION, 1, 1) ~= '5' then
     error('You should only use premake_scaffold from premake5!')
   end
@@ -135,6 +137,11 @@ function ps.generate(settings)
   if settings == nil then
     settings = {}
   end
+
+  if vcpkg_packages then 
+    vcpkg.install(vcpkg_packages)
+  end 
+
   if type(settings) ~= 'table' then
     error('You should provide settings table!')
   end
@@ -151,7 +158,7 @@ function ps.generate(settings)
 
   -- setup up solution level settings
   architecture "x86_64"
-  cppdialect "C++20" 
+  cppdialect "C++20"
   language "C++"
   configurations(S.configurations)
   basedir(S.paths.build)
