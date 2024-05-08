@@ -80,6 +80,19 @@ end
 
 function utils.id() end
 
+function utils.get_all_sources(settings)
+  local allFiles = {}
+  for _, ext in ipairs(settings.source_extensions) do
+      local pattern = settings.paths.modules .. "/**" .. ext
+      local files = os.matchfiles(pattern)
+      for _, file in ipairs(files) do
+          table.insert(allFiles, file)
+      end
+  end
+  return allFiles
+end
+
+
 function utils.create_basic_actions(settings)
   newaction {
     trigger = "clean",
@@ -97,12 +110,17 @@ function utils.create_basic_actions(settings)
   if has_clangformat then 
     newaction {
       trigger = "format",
-      description = "Apply .clang-format style to dirty source files",
+      description = "Apply .clang-format style to dirty source files or --all if specified.",
       onStart = function()
-        local dirty_files = utils.git_get_all_dirty_files(settings.source_extensions)
-        local count = #dirty_files
+        local files_to_format = nil
+        if _OPTIONS["all"] then
+          files_to_format = utils.get_all_sources(settings)
+        else
+          files_to_format = utils.git_get_all_dirty_files(settings.source_extensions)
+        end
+        local count = #files_to_format
         print('%\tStatus')
-        for i, filepath in ipairs(dirty_files) do
+        for i, filepath in ipairs(files_to_format) do
           print( '' .. i .. '/' .. count .. '\tFormatting ' .. filepath)
           os.executef('%s -i -style=file -fallback-style=none %s', settings.paths.ClangFormatExecutable, filepath)
         end
@@ -110,6 +128,11 @@ function utils.create_basic_actions(settings)
     }
   end
   
+  newoption {
+    trigger     = "all",
+    description = "Apply the action to all files",
+  }
+
   newoption {
     trigger     = "rebuild",
     value       = "boolean",
