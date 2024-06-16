@@ -143,6 +143,10 @@ libdirs(PATHS.vcpkg.libs_for_triplet(PATHS.vcpkg.target_triplet))
 filter {}
 
 function vcpkg.install(packages)
+    if type(next(packages)) == "nil" then
+        return
+    end
+
     packages = table.concat(packages, " ")
     if _ACTION ~= nil and (_ACTION == "vs2022" or _ACTION == "gmake2") then
         if MACOS_CROSS_COMPILATION then
