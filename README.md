@@ -3,7 +3,7 @@
 In the age of bazels and deterministic builds, a man needs their reinvented wheels. Bootstrap your minimalistic projects based on ancient technologies at the speed of light:
 
 ```bash
-$ git submodule add https://github.com/yuyoyuppe/premake_scaffold deps/premake_scaffold
+$ git submodule add git@github.com:yuyoyuppe/premake_scaffold.git deps/premake_scaffold
 ```
 
 and then your whole `premake5.lua` is:
@@ -30,16 +30,17 @@ What you've got? Let's say you've had a project structure like this:
 Now your `engine` and `game` could be compiled as 64-bit C++latest static libraries with sane<sup>`-Wall -Werror`</sup> warning settings, and `shaders` will use Vulkan SDK to compile in parallel. All build artefacts are placed in `awesome_project/build` folder by default. You also got new `premake5` actions: `format`, `clean` and `rebuild`.
 
 What about executable and dependencies, you say? Sure, create a `description.lua` in `game` folder with:
+
 ```lua
-return {
-  kind = 'WindowedApp',
-  links = {'game'},
-  dependson = 'shaders' }
+kind 'WindowedApp'
+links {'game'}
+dependson = 'shaders'
 ```
 
-And now you're done. As you see, you can specify any `premake5` *api-call data* on a per-module basis using `description.lua`.
+And now you're done. As you see, you can specify any `premake5` _api-call data_ on a per-module basis using `description.lua`.
 
 # Philosophy
+
 - Every software project needs its own philosophy
 - Don't waste time
 - Use a turn-key solution such as `vcpkg`/`pacman`/`brew` as much as you can
@@ -47,11 +48,12 @@ And now you're done. As you see, you can specify any `premake5` *api-call data* 
 ## API description
 
 ### `generate(settings)`
+
 `settings`: table with the following optional contents:
-- *paths* table:
+
+- _paths_ table:
   - `ClangFormatExecutable` - absolute path to `clang-format` executable if you don't have it in PATH
   - `VulkanSDK`
-  
 
 # TODO
 
