@@ -19,7 +19,7 @@ local default_settings = {
   deps = {}
 }
 
-local function capture_premake_calls(filename)
+local function capture_premake_calls(fullpath)
   local premake_api_calls = {
     "architecture",
     "cppdialect",
@@ -44,6 +44,7 @@ local function capture_premake_calls(filename)
     "targetdir",
     "objdir",
     "files",
+    "removefiles",
     "includedirs",
     "externalincludedirs",
     "syslibdirs",
@@ -59,31 +60,49 @@ local function capture_premake_calls(filename)
   }
 
   local env = {}
-  setmetatable(env, {__index = _G})
+  for k, v in pairs(_G) do
+    env[k] = v
+  end
 
   local premake_calls = {}
-  local function capture_call(name)
-    return function(...)
-      premake_calls[name] = premake_calls[name] or {}
-      table.insert(premake_calls[name], {...})
+
+  for _, name in ipairs(premake_api_calls) do
+    env[name] = function(...)
+      table.insert(premake_calls, {func = name, args = {...}})
     end
   end
 
-  for _, call in ipairs(premake_api_calls) do
-    env[call] = capture_call(call)
+  env._ENV = env
+
+  local f = io.open(fullpath, "r")
+  if not f then
+    error("Failed to open file: " .. fullpath)
   end
 
-  local chunk, err = loadfile(filename, "t", env)
+  local content = f:read("*a")
+  f:close()
+
+  local wrapper = string.format([[
+    local _ENV = ...
+    %s
+  ]], content)
+
+  local chunk, err = load(wrapper, fullpath, "t", env)
   if not chunk then
-    error(err)
+    error("Failed to load file: " .. tostring(err))
   end
-  chunk()
+
+  local success, result = pcall(chunk, env)
+  if not success then
+    error("Failed to execute file: " .. tostring(result))
+  end
 
   return premake_calls
 end
 
 local function generate_module_description(name, prefix)
-  local premake_delayed_calls = capture_premake_calls(prefix .. name .. "/description.lua")
+  local abs_desc_path = path.join(path.join(path.join(_WORKING_DIR, prefix), name), "description.lua")
+  local premake_delayed_calls = capture_premake_calls(abs_desc_path)
 
   local description_defaults = {
     name = name,
@@ -156,10 +175,8 @@ local function generate_module(description, paths, source_extensions)
   dependson(description.dependson)
   links(description.links)
 
-  for method, calls in pairs(description.premake_delayed_calls) do
-    for _, args in ipairs(calls) do
-      _G[method](table.unpack(args))
-    end
+  for _, call in ipairs(description.premake_delayed_calls) do
+    _G[call.func](table.unpack(call.args))
   end
 end
 
