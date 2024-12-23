@@ -229,7 +229,7 @@ function ps.generate(vcpkg_packages, settings)
 
   -- setup up solution level settings
   architecture "x86_64"
-  cppdialect "C++20"
+  cppdialect "C++23"
   language "C++"
   configurations(S.configurations)
   basedir(S.paths.build)
