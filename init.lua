@@ -236,7 +236,7 @@ function ps.generate(vcpkg_packages, settings)
   warnings "Extra"
   vcpkgstatic "true"
   staticruntime "on"
-  fatalwarnings { "Compile", "Link" }
+  fatalwarnings { "All" }
 
   filter "system:windows"
   flags {
