@@ -254,7 +254,8 @@ function ps.generate(vcpkg_packages, settings)
   }
   defines {
     "NOMINMAX",
-    "_CRT_SECURE_NO_WARNINGS"
+    "_CRT_SECURE_NO_WARNINGS",
+    "_SILENCE_CXX23_ALIGNED_STORAGE_DEPRECATION_WARNING"
   }
   filter {"configurations:Debug", "system:windows"}
   disablewarnings {
