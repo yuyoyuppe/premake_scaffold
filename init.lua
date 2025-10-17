@@ -75,12 +75,11 @@ local function capture_premake_calls(fullpath)
   env._ENV = env
 
   local f = io.open(fullpath, "r")
-  if not f then
-    error("Failed to open file: " .. fullpath)
+  local content = ""
+  if f then
+    content = f:read("*a")
+    f:close()
   end
-
-  local content = f:read("*a")
-  f:close()
 
   local wrapper = string.format([[
     local _ENV = ...
