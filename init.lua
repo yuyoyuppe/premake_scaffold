@@ -242,7 +242,7 @@ function ps.generate(vcpkg_packages, settings)
     "MultiProcessorCompile",
     "UndefinedIdentifiers"
   }
-  buildoptions {"/permissive-", "/Zc:__cplusplus"}
+  buildoptions {"/permissive-", "/Zc:__cplusplus", "/utf-8"}
 
   filter {"system:windows"}
   disablewarnings {
