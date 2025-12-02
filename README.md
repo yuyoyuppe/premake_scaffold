@@ -11,7 +11,7 @@ and then your whole `premake5.lua` is:
 ```lua
 ps = require 'deps.premake_scaffold'
 workspace "awesome_project"
-ps.generate({ paths = {  VulkanSDK = "S:\\VulkanSDK\\1.1.121.2\\" } })
+ps.generate()
 ```
 
 What you've got? Let's say you've had a project structure like this:
@@ -33,11 +33,10 @@ What about executable and dependencies, you say? Sure, create a `description.lua
 
 ```lua
 kind 'WindowedApp'
-links {'game'}
-dependson = 'shaders'
+links {'engine'}
 ```
 
-And now you're done. As you see, you can specify any `premake5` _api-call data_ on a per-module basis using `description.lua`.
+And now you're done. As you see, you can specify any `premake5` API call on a per-module basis using `description.lua`. Modules without a `description.lua` use defaults (kind = "ConsoleApp").
 
 # Philosophy
 
@@ -47,13 +46,24 @@ And now you're done. As you see, you can specify any `premake5` _api-call data_ 
 
 ## API description
 
-### `generate(settings)`
+### `generate(vcpkg_packages, settings)`
 
-`settings`: table with the following optional contents:
+- `vcpkg_packages`: optional table of vcpkg packages to install
+- `settings`: optional table with the following contents:
+  - _paths_ table:
+    - `ClangFormatExecutable` - absolute path to `clang-format` executable if you don't have it in PATH
+  - _module_defaults_ table:
+    - `kind` - default project kind for all modules (default: "ConsoleApp")
 
-- _paths_ table:
-  - `ClangFormatExecutable` - absolute path to `clang-format` executable if you don't have it in PATH
-  - `VulkanSDK`
+Example with custom module defaults:
+
+```lua
+ps.generate(nil, {
+  module_defaults = {
+    kind = "StaticLib"
+  }
+})
+```
 
 # TODO
 

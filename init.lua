@@ -16,7 +16,10 @@ local default_settings = {
   },
   source_extensions = {".cpp", ".hpp", ".ipp", ".cxx", ".hxx", ".h", ".cc"},
   configurations = {"Debug", "Release"},
-  deps = {}
+  deps = {},
+  module_defaults = {
+    kind = "ConsoleApp",
+  }
 }
 
 local function capture_premake_calls(fullpath)
@@ -73,13 +76,15 @@ local function capture_premake_calls(fullpath)
   end
 
   env._ENV = env
+  env._SCRIPT = fullpath
 
   local f = io.open(fullpath, "r")
-  local content = ""
-  if f then
-    content = f:read("*a")
-    f:close()
+  if not f then
+    return premake_calls
   end
+
+  local content = f:read("*a")
+  f:close()
 
   local wrapper = string.format([[
     local _ENV = ...
@@ -99,7 +104,7 @@ local function capture_premake_calls(fullpath)
   return premake_calls
 end
 
-local function generate_module_description(name, prefix)
+local function generate_module_description(name, prefix, module_defaults)
   local abs_desc_path = path.join(path.join(path.join(_WORKING_DIR, prefix), name), "description.lua")
   local premake_delayed_calls = capture_premake_calls(abs_desc_path)
 
@@ -108,11 +113,10 @@ local function generate_module_description(name, prefix)
     dependson = {},
     additional_logic = utils.id,
     base_path = prefix .. name .. "/",
-    custom_build_pipelines = {}
+    custom_build_pipelines = {},
   }
-  local description = {}
-  local description_file = prefix .. name .. "/description.lua"
-  description = table.merge(description_defaults, premake_delayed_calls)
+  local description = table.merge(description_defaults, module_defaults)
+  description = table.merge(description, premake_delayed_calls)
 
   description.premake_delayed_calls = premake_delayed_calls
   return description
@@ -148,6 +152,7 @@ end
 
 local function generate_module(description, paths, source_extensions)
   project(description.name)
+  kind(description.kind)
   basedir(paths.build)
   debugdir(paths.build .. "bin")
   targetdir(paths.build .. "bin")
@@ -175,7 +180,12 @@ local function generate_module(description, paths, source_extensions)
   links(description.links)
 
   for _, call in ipairs(description.premake_delayed_calls) do
-    _G[call.func](table.unpack(call.args))
+    local fn = _G[call.func]
+    if fn then
+      fn(table.unpack(call.args))
+    else
+      premake.warn("Unknown premake API in " .. description.name .. ": " .. call.func)
+    end
   end
 end
 
@@ -280,7 +290,7 @@ function ps.generate(vcpkg_packages, settings)
   local module_descriptions = {}
   for _, module_path in ipairs(os.matchdirs(S.paths.modules .. "*")) do
     local module_name = path.getname(module_path)
-    local desc = generate_module_description(module_name, S.paths.modules)
+    local desc = generate_module_description(module_name, S.paths.modules, S.module_defaults)
     module_descriptions[desc.name] = desc
     for name, desc in pairs(module_descriptions) do
       for _, link in ipairs(desc.premake_delayed_calls.links or {}) do
