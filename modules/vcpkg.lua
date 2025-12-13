@@ -148,7 +148,7 @@ function vcpkg.install(packages)
     end
 
     packages = table.concat(packages, " ")
-    if _ACTION ~= nil and (_ACTION == "vs2022" or _ACTION == "gmake2") then
+    if _ACTION ~= nil and (_ACTION == "vs2026" or _ACTION == "gmake2") then
         if MACOS_CROSS_COMPILATION then
             vcpkg_install("flatbuffers", PATHS.vcpkg.host_triplet)
             vcpkg_install(packages, PATHS.vcpkg.host_triplet)
