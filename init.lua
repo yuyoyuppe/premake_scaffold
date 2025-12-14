@@ -1,6 +1,7 @@
 require "modules.extensions"
 require "modules.options"
 require "modules.vcpkg"
+require "modules.nuget"
 
 local ps = {_VERSION = "0.2", utils = require "modules.utils"}
 
