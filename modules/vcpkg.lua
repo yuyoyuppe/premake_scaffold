@@ -4,11 +4,17 @@ vcpkg = {
 }
 
 local vcpkg_root = os.getenv("VCPKG_ROOT")
-if vcpkg_root == nil or vcpkg_root == "" then
-    error("You should set env var VCPKG_ROOT to vcpkg's install location")
+vcpkg.enabled = (vcpkg_root ~= nil and vcpkg_root ~= "")
+
+local function ensure_vcpkg_enabled()
+    if vcpkg.enabled then
+        return
+    end
+    error("VCPKG_ROOT is not set, but vcpkg support was requested. Set env var VCPKG_ROOT to vcpkg's install location.")
 end
 
 local function vcpkg_install(packages, triplet)
+    ensure_vcpkg_enabled()
     if os.getenv("ZSH_VERSION") ~= nil then
         packages = packages:gsub("%[", "\\["):gsub("%]", "\\]")
     end
@@ -40,34 +46,42 @@ if not PATHS then
 end
 
 PATHS.vcpkg = {}
-PATHS.vcpkg.root = path.normalize(vcpkg_root)
-PATHS.vcpkg.target_triplet = _OPTIONS["arch"] .. "-" .. TARGET_TO_TRIPLET[os.target()]
-PATHS.vcpkg.host_triplet = PATHS.vcpkg.target_triplet
-if MACOS_CROSS_COMPILATION then
-    PATHS.vcpkg.host_triplet = "x64-osx"
+if vcpkg.enabled then
+    PATHS.vcpkg.root = path.normalize(vcpkg_root)
+    PATHS.vcpkg.target_triplet = _OPTIONS["arch"] .. "-" .. TARGET_TO_TRIPLET[os.target()]
+    PATHS.vcpkg.host_triplet = PATHS.vcpkg.target_triplet
+    if MACOS_CROSS_COMPILATION then
+        PATHS.vcpkg.host_triplet = "x64-osx"
+    end
+    PATHS.vcpkg.target_triplet = _OPTIONS["arch"] .. "-" .. TARGET_TO_TRIPLET[os.target()]
+    PATHS.vcpkg.installed = path.join(PATHS.vcpkg.root, "installed")
+    PATHS.vcpkg.tools = path.join(PATHS.vcpkg.installed, PATHS.vcpkg.host_triplet .. "/tools")
 end
-PATHS.vcpkg.target_triplet = _OPTIONS["arch"] .. "-" .. TARGET_TO_TRIPLET[os.target()]
-PATHS.vcpkg.installed = path.join(PATHS.vcpkg.root, "installed")
-PATHS.vcpkg.tools = path.join(PATHS.vcpkg.installed, PATHS.vcpkg.host_triplet .. "/tools")
 
 function PATHS.vcpkg.includes_for_triplet(triplet)
+    ensure_vcpkg_enabled()
     local main_include_path = path.join(PATHS.vcpkg.installed, triplet .. "/include")
     return {main_include_path}
 end
 
-filter {}
-externalincludedirs(PATHS.vcpkg.includes_for_triplet(PATHS.vcpkg.target_triplet))
+if vcpkg.enabled then
+    filter {}
+    externalincludedirs(PATHS.vcpkg.includes_for_triplet(PATHS.vcpkg.target_triplet))
+end
 
 function PATHS.vcpkg.libs_for_triplet(triplet)
+    ensure_vcpkg_enabled()
     return {path.join(PATHS.vcpkg.installed, triplet .. "/lib")}
 end
 
 function PATHS.vcpkg.debug_libs_for_triplet(triplet)
+    ensure_vcpkg_enabled()
     return {path.join(PATHS.vcpkg.installed, triplet .. "/debug/lib")}
 end
 
 -- Helper function for libs that have inconsistent naming due to vcpkg's sloppiness
 function PATHS.vcpkg.links(names, filter_conf)
+    ensure_vcpkg_enabled()
     local unix_debug_suffices = {
         fmt = "d",
         infoware = "d",
@@ -136,17 +150,20 @@ function PATHS.vcpkg.links(names, filter_conf)
     end
 end
 
-filter {"configurations:Debug"}
-libdirs(PATHS.vcpkg.debug_libs_for_triplet(PATHS.vcpkg.target_triplet))
-filter {"configurations:not Debug"}
-libdirs(PATHS.vcpkg.libs_for_triplet(PATHS.vcpkg.target_triplet))
-filter {}
+if vcpkg.enabled then
+    filter {"configurations:Debug"}
+    libdirs(PATHS.vcpkg.debug_libs_for_triplet(PATHS.vcpkg.target_triplet))
+    filter {"configurations:not Debug"}
+    libdirs(PATHS.vcpkg.libs_for_triplet(PATHS.vcpkg.target_triplet))
+    filter {}
+end
 
 function vcpkg.install(packages)
     if type(next(packages)) == "nil" then
         return
     end
 
+    ensure_vcpkg_enabled()
     packages = table.concat(packages, " ")
     if _ACTION ~= nil and (_ACTION == "vs2026" or _ACTION == "gmake2") then
         if MACOS_CROSS_COMPILATION then
