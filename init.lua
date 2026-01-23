@@ -210,6 +210,10 @@ local function infer_solution_level_settings(module_descriptions)
   end
 end
 
+local function is_premake_call(name)
+  return premake.field.get(name) ~= nil
+end
+
 function ps.generate(vcpkg_packages, settings)
   if not premake or string.sub(premake._VERSION, 1, 1) ~= "5" then
     error("You should only use premake_scaffold from premake5!")
@@ -219,7 +223,7 @@ function ps.generate(vcpkg_packages, settings)
     settings = {}
   end
 
-  if vcpkg_packages then
+  if vcpkg_packages and type(next(vcpkg_packages)) ~= "nil" then
     vcpkg.install(vcpkg_packages)
   end
 

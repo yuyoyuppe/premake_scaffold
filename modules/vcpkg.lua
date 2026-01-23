@@ -14,6 +14,9 @@ local function ensure_vcpkg_enabled()
 end
 
 local function vcpkg_install(packages, triplet)
+    if type(next(packages)) == "nil" then
+        return
+    end
     ensure_vcpkg_enabled()
     if os.getenv("ZSH_VERSION") ~= nil then
         packages = packages:gsub("%[", "\\["):gsub("%]", "\\]")
