@@ -253,10 +253,7 @@ function ps.generate(vcpkg_packages, settings)
   fatalwarnings { "All" }
 
   filter "system:windows"
-  flags {
-    "MultiProcessorCompile",
-    "UndefinedIdentifiers"
-  }
+  multiprocessorcompile "on"
   buildoptions {"/permissive-", "/Zc:__cplusplus", "/utf-8"}
 
   filter {"system:windows"}
