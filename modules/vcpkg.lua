@@ -48,15 +48,15 @@ if not PATHS then
     PATHS = {}
 end
 
-PATHS.vcpkg = {}
+if not PATHS.vcpkg then PATHS.vcpkg = {} end
 if vcpkg.enabled then
     PATHS.vcpkg.root = path.normalize(vcpkg_root)
-    PATHS.vcpkg.target_triplet = _OPTIONS["arch"] .. "-" .. TARGET_TO_TRIPLET[os.target()]
-    PATHS.vcpkg.host_triplet = PATHS.vcpkg.target_triplet
+    local default_triplet = _OPTIONS["arch"] .. "-" .. TARGET_TO_TRIPLET[os.target()]
+    PATHS.vcpkg.target_triplet = PATHS.vcpkg.target_triplet or os.getenv("VCPKG_DEFAULT_TRIPLET") or default_triplet
+    PATHS.vcpkg.host_triplet = PATHS.vcpkg.host_triplet or PATHS.vcpkg.target_triplet
     if MACOS_CROSS_COMPILATION then
         PATHS.vcpkg.host_triplet = "x64-osx"
     end
-    PATHS.vcpkg.target_triplet = _OPTIONS["arch"] .. "-" .. TARGET_TO_TRIPLET[os.target()]
     PATHS.vcpkg.installed = path.join(PATHS.vcpkg.root, "installed")
     PATHS.vcpkg.tools = path.join(PATHS.vcpkg.installed, PATHS.vcpkg.host_triplet .. "/tools")
 end
