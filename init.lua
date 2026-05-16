@@ -3,6 +3,13 @@ require "modules.options"
 require "modules.vcpkg"
 require "modules.nuget"
 
+local scaffold_source = debug.getinfo(1, "S").source:sub(2)
+local scaffold_dir = path.getabsolute(path.getdirectory(scaffold_source))
+local previous_dir = os.getcwd()
+os.chdir(path.join(scaffold_dir, "deps/premake5-cuda"))
+dofile("premake5-cuda.lua")
+os.chdir(previous_dir)
+
 local ps = {_VERSION = "0.2", utils = require "modules.utils"}
 
 local default_settings = {
@@ -64,7 +71,23 @@ local function capture_premake_calls(fullpath)
     "buildoutputs",
     "buildcommands",
     "buildmessage",
-    "startproject"
+    "startproject",
+    "buildcustomizations",
+    "cudaRelocatableCode",
+    "cudaExtensibleWholeProgram",
+    "cudaCompilerOptions",
+    "cudaLinkerOptions",
+    "cudaLinkFiles",
+    "cudaFastMath",
+    "cudaVerbosePTXAS",
+    "cudaMaxRegCount",
+    "cudaFiles",
+    "cudaPTXFiles",
+    "cudaKeep",
+    "cudaPath",
+    "cudaGenLineInfo",
+    "cudaIntDir",
+    "cudaKeepDir"
   }
 
   local env = {}
@@ -155,6 +178,101 @@ local function generate_module_custom_build_pipeline(description, cbp)
   end
 end
 
+local function module_relative_paths(description, values)
+  local result = {}
+  for _, value in ipairs(values) do
+    if path.isabsolute(value) then
+      result[#result + 1] = value
+    else
+      result[#result + 1] = path.getabsolute(path.join(description.base_path, value))
+    end
+  end
+  return result
+end
+
+local function target_relative_paths(paths, values)
+  local result = {}
+  for _, value in ipairs(values) do
+    if path.isabsolute(value) then
+      result[#result + 1] = value
+    else
+      result[#result + 1] = path.getabsolute(path.join(paths.build .. "bin", value))
+    end
+  end
+  return result
+end
+
+local function has_premake_call(description, func)
+  for _, call in ipairs(description.premake_delayed_calls) do
+    if call.func == func then
+      return true
+    end
+  end
+  return false
+end
+
+local function has_cuda_call(description)
+  for _, call in ipairs(description.premake_delayed_calls) do
+    if call.func:sub(1, 4) == "cuda" then
+      return true
+    end
+  end
+  return false
+end
+
+local function detect_cuda_version()
+  local cudaPath = os.getenv("CUDA_PATH")
+  if cudaPath ~= nil and cudaPath ~= "" then
+    local nvcc = path.join(cudaPath, "bin/nvcc")
+    return detectNvccVersion('"' .. nvcc .. '"')
+  end
+
+  return detectNvccVersion()
+end
+
+local function setup_cuda_module(description)
+  if not has_cuda_call(description) then
+    return
+  end
+
+  local cudaVersion = detect_cuda_version()
+  if cudaVersion == 0 or cudaVersion == "0" or cudaVersion == nil then
+    premake.warn("CUDA toolkit was not detected; skipping CUDA build customizations for " .. description.name)
+    return
+  end
+
+  if not has_premake_call(description, "buildcustomizations") then
+    buildcustomizations("BuildCustomizations/CUDA " .. cudaVersion)
+  end
+
+  if os.host() == "windows" then
+    local cudaPath = os.getenv("CUDA_PATH")
+    if cudaPath ~= nil then
+      syslibdirs {cudaPath .. "/lib/x64"}
+    end
+  end
+end
+
+local function replay_premake_call(description, paths, call)
+  local fn = _G[call.func]
+  if not fn then
+    premake.warn("Unknown premake API in " .. description.name .. ": " .. call.func)
+    return
+  end
+
+  if (call.func == "cudaFiles" or call.func == "cudaPTXFiles") and type(call.args[1]) == "table" then
+    fn(module_relative_paths(description, call.args[1]))
+    return
+  end
+
+  if call.func == "cudaLinkFiles" and type(call.args[1]) == "table" then
+    fn(target_relative_paths(paths, call.args[1]))
+    return
+  end
+
+  fn(table.unpack(call.args))
+end
+
 local function generate_module(description, paths, source_extensions)
   project(description.name)
   kind(description.kind)
@@ -183,14 +301,10 @@ local function generate_module(description, paths, source_extensions)
 
   dependson(description.dependson)
   links(description.links)
+  setup_cuda_module(description)
 
   for _, call in ipairs(description.premake_delayed_calls) do
-    local fn = _G[call.func]
-    if fn then
-      fn(table.unpack(call.args))
-    else
-      premake.warn("Unknown premake API in " .. description.name .. ": " .. call.func)
-    end
+    replay_premake_call(description, paths, call)
   end
 end
 

@@ -1,0 +1,3 @@
+[submodule "deps/premake5-cuda"]
+	path = deps/premake5-cuda
+	url = https://github.com/yuyoyuppe/premake5-cuda.git
