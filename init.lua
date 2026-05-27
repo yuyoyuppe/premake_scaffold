@@ -10,7 +10,11 @@ os.chdir(path.join(scaffold_dir, "deps/premake5-cuda"))
 dofile("premake5-cuda.lua")
 os.chdir(previous_dir)
 
-local ps = {_VERSION = "0.2", utils = require "modules.utils"}
+local ps = {
+  _VERSION = "0.2",
+  utils = require "modules.utils",
+  os_utils = require "modules.os_utils",
+}
 
 local default_settings = {
   paths = {

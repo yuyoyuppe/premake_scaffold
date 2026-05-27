@@ -27,7 +27,8 @@ end
 
 local function read_cache(filename)
     local cache = {}
-    local file = io.open(path.join(PATHS.build, filename), "r")
+    local build_dir = (PATHS and PATHS.build) or "build/"
+    local file = io.open(path.join(build_dir, filename), "r")
     if file then
         for line in file:lines() do
             local key, value = line:match("([^:]+):(.*)")
@@ -39,7 +40,9 @@ local function read_cache(filename)
 end
 
 local function save_cache(cache, filename)
-    local file = io.open(path.join(PATHS.build, filename), "w")
+    local build_dir = (PATHS and PATHS.build) or "build/"
+    os.mkdir(build_dir)
+    local file = io.open(path.join(build_dir, filename), "w")
     for key, value in pairs(cache) do
         file:write(key .. ":" .. value .. "\n")
     end
@@ -106,11 +109,57 @@ function os_utils.obtain_vcvars_tool_path(tool_name)
     return output
 end
 
-function os_utils.execute_or_exit(cmd)
-    if not os.execute(cmd) then
-        premake.error("Execution of the '" .. cmd .. "' failed. Stopping.")
+function os_utils.execute_or_exit(cmd, ...)
+    local formatted = cmd:format(...)
+    local result = os.execute(formatted)
+    if result ~= true and result ~= 0 then
+        premake.error("Execution of the '" .. formatted .. "' failed. Stopping.")
     end
 end
+
+function os_utils.obtain_vcvars_path(arch)
+    if os.host() ~= "windows" then
+        return nil
+    end
+
+    arch = arch or "x64"
+    local vcvars_arch = arch == "x64" and "64" or arch
+    local cache_filename = "cached_vcvars_paths.txt"
+    local cache_key = "vcvars_" .. arch
+    local cache = read_cache(cache_filename)
+    if cache[cache_key] and os.isfile(cache[cache_key]) then
+        return cache[cache_key]
+    end
+
+    local vs_root = get_latest_vs_install_path()
+    if not vs_root then
+        premake.error("Visual Studio installation was not found.")
+    end
+
+    local vcvars = path.join(vs_root, "VC\\Auxiliary\\Build\\vcvars" .. vcvars_arch .. ".bat")
+    if not os.isfile(vcvars) then
+        premake.error("Visual Studio vcvars script was not found: " .. vcvars)
+    end
+
+    cache[cache_key] = vcvars
+    save_cache(cache, cache_filename)
+    return vcvars
+end
+
+function os_utils.with_native_toolchain_env(cmd, arch)
+    if os.host() ~= "windows" then
+        return cmd
+    end
+
+    return string.format('cmd /c ""%s" >nul && %s"', os_utils.obtain_vcvars_path(arch), cmd)
+end
+
+function os_utils.execute_with_native_toolchain_env_or_exit(cmd, arch)
+    os_utils.execute_or_exit(os_utils.with_native_toolchain_env(cmd, arch))
+end
+
+os_utils.with_vcvars = os_utils.with_native_toolchain_env
+os_utils.execute_with_vcvars_or_exit = os_utils.execute_with_native_toolchain_env_or_exit
 
 function os_utils.zip_dir(src_dir, zip_name)
     if os.host() == "windows" then
