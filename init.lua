@@ -357,7 +357,11 @@ function ps.generate(vcpkg_packages, settings)
     end
   end
   local S = table.merge(default_settings, settings)
+  if premake_delayed_calls.vcpkgmanifest ~= nil then
+    vcpkg.set_manifest_enabled(premake_delayed_calls.vcpkgmanifest)
+  end
   utils.create_basic_actions(S)
+  vcpkg.apply_classic_paths()
 
   -- setup up solution level settings
   architecture "x86_64"

@@ -5,6 +5,7 @@ vcpkg = {
 
 local vcpkg_root = os.getenv("VCPKG_ROOT")
 vcpkg.enabled = (vcpkg_root ~= nil and vcpkg_root ~= "")
+vcpkg.manifest_enabled = false
 
 local function ensure_vcpkg_enabled()
     if vcpkg.enabled then
@@ -61,15 +62,14 @@ if vcpkg.enabled then
     PATHS.vcpkg.tools = path.join(PATHS.vcpkg.installed, PATHS.vcpkg.host_triplet .. "/tools")
 end
 
+function vcpkg.set_manifest_enabled(enabled)
+    vcpkg.manifest_enabled = enabled == true
+end
+
 function PATHS.vcpkg.includes_for_triplet(triplet)
     ensure_vcpkg_enabled()
     local main_include_path = path.join(PATHS.vcpkg.installed, triplet .. "/include")
     return {main_include_path}
-end
-
-if vcpkg.enabled then
-    filter {}
-    externalincludedirs(PATHS.vcpkg.includes_for_triplet(PATHS.vcpkg.target_triplet))
 end
 
 function PATHS.vcpkg.libs_for_triplet(triplet)
@@ -153,7 +153,13 @@ function PATHS.vcpkg.links(names, filter_conf)
     end
 end
 
-if vcpkg.enabled then
+function vcpkg.apply_classic_paths()
+    if not vcpkg.enabled or vcpkg.manifest_enabled then
+        return
+    end
+
+    filter {}
+    externalincludedirs(PATHS.vcpkg.includes_for_triplet(PATHS.vcpkg.target_triplet))
     filter {"configurations:Debug"}
     libdirs(PATHS.vcpkg.debug_libs_for_triplet(PATHS.vcpkg.target_triplet))
     filter {"configurations:not Debug"}
