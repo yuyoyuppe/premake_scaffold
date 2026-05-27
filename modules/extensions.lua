@@ -58,6 +58,12 @@ p.api.register {
 }
 
 p.api.register {
+    name = "vcpkgautobootstrap",
+    scope = "workspace",
+    kind = "boolean"
+}
+
+p.api.register {
     name = "vcpkgusemd",
     scope = "workspace",
     kind = "boolean"
@@ -119,6 +125,7 @@ local function VcpkgSettings(prj)
     optionalVcpkgElement(prj, "vcpkgmanifestinstall", "VcpkgManifestInstall")
     optionalVcpkgElement(prj, "vcpkgautolink", "VcpkgAutoLink")
     optionalVcpkgElement(prj, "vcpkgapplocaldeps", "VcpkgApplocalDeps")
+    optionalVcpkgElement(prj, "vcpkgautobootstrap", "VcpkgAutoBootstrap")
     optionalVcpkgElement(prj, "vcpkgusemd", "VcpkgUseMD")
     optionalVcpkgElement(prj, "vcpkgroot", "VcpkgRoot")
     optionalVcpkgElement(prj, "vcpkgmanifestroot", "VcpkgManifestRoot")
